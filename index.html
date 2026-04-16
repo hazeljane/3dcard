@@ -8,9 +8,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Trad:wght@100..400&family=Poppins:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="lines.css">
+
+<style>
+/* 🔥 Tap to enable overlay */
+#enableTilt {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.8);
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-family: Poppins;
+	z-index: 999;
+	cursor: pointer;
+}
+</style>
 </head>
 
 <body>
+
+<div id="enableTilt">Tap to Enable 3D Tilt</div>
 
 <div class="container" id="card">
 	<img src="me.png" alt="">
@@ -18,34 +36,32 @@
 
 	<div class="group">
 		<span>❤</span>
-		<p>For a programmer , curiosity is the key to growth and success.</p>
+		<p>For a programmer, curiosity is the key to growth and success.</p>
 		<span>❤</span>
 	</div>
 </div>
 
 <script>
 const card = document.getElementById("card");
+const overlay = document.getElementById("enableTilt");
 
 // ===== STATE =====
 let currentX = 0;
 let currentY = 0;
-
 let targetX = 0;
 let targetY = 0;
-
 let velocityX = 0;
 let velocityY = 0;
 
-// Detect mobile
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-// ===== LIGHT FOLLOW =====
+// ===== LIGHT =====
 function updateLight(px, py) {
-	card.style.setProperty("--x", `${px}%`);
-	card.style.setProperty("--y", `${py}%`);
+	card.style.setProperty("--x", px + "%");
+	card.style.setProperty("--y", py + "%");
 }
 
-// ===== DESKTOP (mouse tilt) =====
+// ===== DESKTOP =====
 function handleMouseMove(e) {
 	const rect = card.getBoundingClientRect();
 
@@ -55,56 +71,58 @@ function handleMouseMove(e) {
 	targetY = x * 16;
 	targetX = y * -16;
 
-	updateLight(
-		(x + 0.5) * 100,
-		(y + 0.5) * 100
-	);
+	updateLight((x + 0.5) * 100, (y + 0.5) * 100);
 }
 
-// ===== MOBILE (GYROSCOPE tilt) =====
+// ===== MOBILE GYRO =====
 function handleOrientation(e) {
-	let x = e.beta;   // front/back
-	let y = e.gamma;  // left/right
+	let x = e.beta;
+	let y = e.gamma;
 
-	// Clamp values (avoid crazy tilt)
+	if (x === null || y === null) return;
+
 	x = Math.max(-30, Math.min(30, x));
 	y = Math.max(-30, Math.min(30, y));
 
 	targetX = x / 2;
 	targetY = y / 2;
 
-	// Light follow
-	const px = (y + 30) / 60 * 100;
-	const py = (x + 30) / 60 * 100;
-
-	updateLight(px, py);
+	updateLight(
+		((y + 30) / 60) * 100,
+		((x + 30) / 60) * 100
+	);
 }
 
-// ===== ENABLE GYRO (for iPhone) =====
+// ===== ENABLE GYRO =====
 function enableGyro() {
 	if (
 		typeof DeviceOrientationEvent !== "undefined" &&
 		typeof DeviceOrientationEvent.requestPermission === "function"
 	) {
-		// iOS
 		DeviceOrientationEvent.requestPermission()
 			.then(res => {
 				if (res === "granted") {
 					window.addEventListener("deviceorientation", handleOrientation);
+					overlay.style.display = "none";
+				} else {
+					overlay.innerText = "Permission denied ❌";
 				}
 			})
-			.catch(console.error);
+			.catch(() => {
+				overlay.innerText = "Gyro not supported ❌";
+			});
 	} else {
-		// Android
 		window.addEventListener("deviceorientation", handleOrientation);
+		overlay.style.display = "none";
 	}
 }
 
 // ===== INIT =====
 if (isMobile) {
-	// Tap once to enable gyro (required on iOS)
-	document.body.addEventListener("click", enableGyro, { once: true });
+	overlay.addEventListener("click", enableGyro);
 } else {
+	overlay.style.display = "none";
+
 	card.addEventListener("pointermove", handleMouseMove);
 
 	card.addEventListener("pointerleave", () => {
@@ -137,5 +155,6 @@ function animate() {
 
 animate();
 </script>
+
 </body>
 </html>

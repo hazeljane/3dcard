@@ -28,6 +28,8 @@ body {
 	background: white;
 	border-radius: var(--radius);
 
+	transform-style: preserve-3d;
+	
 	position: relative;
 	display: flex;
 	justify-content: center;
