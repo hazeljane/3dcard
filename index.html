@@ -47,27 +47,51 @@ function updateLight(x, y) {
 	card.style.setProperty("--y", `${py}%`);
 }
 
-// ===== POINTER MOVE (mouse + touch unified) =====
-card.addEventListener("pointermove", (e) => {
-	updateLight(e.clientX, e.clientY);
+// ===== HANDLE MOVE (shared logic) =====
+function handleMove(clientX, clientY) {
+	updateLight(clientX, clientY);
 
 	const rect = card.getBoundingClientRect();
 
-	const x = (e.clientX - rect.left) / rect.width - 0.5;
-	const y = (e.clientY - rect.top) / rect.height - 0.5;
+	const x = (clientX - rect.left) / rect.width - 0.5;
+	const y = (clientY - rect.top) / rect.height - 0.5;
 
 	targetY = x * 16;
 	targetX = y * -16;
+}
+
+// ===== DESKTOP (mouse / pointer) =====
+card.addEventListener("pointermove", (e) => {
+	handleMove(e.clientX, e.clientY);
+});
+
+card.addEventListener("pointerdown", (e) => {
+	handleMove(e.clientX, e.clientY);
+});
+
+// ===== MOBILE (touch) =====
+card.addEventListener("touchmove", (e) => {
+	e.preventDefault(); // prevents scroll conflict
+	const touch = e.touches[0];
+	handleMove(touch.clientX, touch.clientY);
+}, { passive: false });
+
+card.addEventListener("touchstart", (e) => {
+	const touch = e.touches[0];
+	handleMove(touch.clientX, touch.clientY);
 });
 
 // ===== RESET =====
-card.addEventListener("pointerleave", () => {
+function resetCard() {
 	targetX = 0;
 	targetY = 0;
 
 	card.style.setProperty("--x", "50%");
 	card.style.setProperty("--y", "50%");
-});
+}
+
+card.addEventListener("pointerleave", resetCard);
+card.addEventListener("touchend", resetCard);
 
 // ===== ANIMATION =====
 function animate() {

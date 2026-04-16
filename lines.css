@@ -17,6 +17,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	background: black;
+	touch-action: manipulation;
 	perspective: var(--perspective);
 }
 
@@ -32,6 +33,8 @@ body {
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
+
+	touch-action: none;
 
 	transform-style: preserve-3d;
 	will-change: transform;
