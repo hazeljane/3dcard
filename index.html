@@ -36,62 +36,83 @@ let targetY = 0;
 let velocityX = 0;
 let velocityY = 0;
 
+// Detect mobile
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
 // ===== LIGHT FOLLOW =====
-function updateLight(x, y) {
-	const rect = card.getBoundingClientRect();
-
-	const px = ((x - rect.left) / rect.width) * 100;
-	const py = ((y - rect.top) / rect.height) * 100;
-
+function updateLight(px, py) {
 	card.style.setProperty("--x", `${px}%`);
 	card.style.setProperty("--y", `${py}%`);
 }
 
-// ===== HANDLE MOVE (shared logic) =====
-function handleMove(clientX, clientY) {
-	updateLight(clientX, clientY);
-
+// ===== DESKTOP (mouse tilt) =====
+function handleMouseMove(e) {
 	const rect = card.getBoundingClientRect();
 
-	const x = (clientX - rect.left) / rect.width - 0.5;
-	const y = (clientY - rect.top) / rect.height - 0.5;
+	const x = (e.clientX - rect.left) / rect.width - 0.5;
+	const y = (e.clientY - rect.top) / rect.height - 0.5;
 
 	targetY = x * 16;
 	targetX = y * -16;
+
+	updateLight(
+		(x + 0.5) * 100,
+		(y + 0.5) * 100
+	);
 }
 
-// ===== DESKTOP (mouse / pointer) =====
-card.addEventListener("pointermove", (e) => {
-	handleMove(e.clientX, e.clientY);
-});
+// ===== MOBILE (GYROSCOPE tilt) =====
+function handleOrientation(e) {
+	let x = e.beta;   // front/back
+	let y = e.gamma;  // left/right
 
-card.addEventListener("pointerdown", (e) => {
-	handleMove(e.clientX, e.clientY);
-});
+	// Clamp values (avoid crazy tilt)
+	x = Math.max(-30, Math.min(30, x));
+	y = Math.max(-30, Math.min(30, y));
 
-// ===== MOBILE (touch) =====
-card.addEventListener("touchmove", (e) => {
-	e.preventDefault(); // prevents scroll conflict
-	const touch = e.touches[0];
-	handleMove(touch.clientX, touch.clientY);
-}, { passive: false });
+	targetX = x / 2;
+	targetY = y / 2;
 
-card.addEventListener("touchstart", (e) => {
-	const touch = e.touches[0];
-	handleMove(touch.clientX, touch.clientY);
-});
+	// Light follow
+	const px = (y + 30) / 60 * 100;
+	const py = (x + 30) / 60 * 100;
 
-// ===== RESET =====
-function resetCard() {
-	targetX = 0;
-	targetY = 0;
-
-	card.style.setProperty("--x", "50%");
-	card.style.setProperty("--y", "50%");
+	updateLight(px, py);
 }
 
-card.addEventListener("pointerleave", resetCard);
-card.addEventListener("touchend", resetCard);
+// ===== ENABLE GYRO (for iPhone) =====
+function enableGyro() {
+	if (
+		typeof DeviceOrientationEvent !== "undefined" &&
+		typeof DeviceOrientationEvent.requestPermission === "function"
+	) {
+		// iOS
+		DeviceOrientationEvent.requestPermission()
+			.then(res => {
+				if (res === "granted") {
+					window.addEventListener("deviceorientation", handleOrientation);
+				}
+			})
+			.catch(console.error);
+	} else {
+		// Android
+		window.addEventListener("deviceorientation", handleOrientation);
+	}
+}
+
+// ===== INIT =====
+if (isMobile) {
+	// Tap once to enable gyro (required on iOS)
+	document.body.addEventListener("click", enableGyro, { once: true });
+} else {
+	card.addEventListener("pointermove", handleMouseMove);
+
+	card.addEventListener("pointerleave", () => {
+		targetX = 0;
+		targetY = 0;
+		updateLight(50, 50);
+	});
+}
 
 // ===== ANIMATION =====
 function animate() {
@@ -116,6 +137,5 @@ function animate() {
 
 animate();
 </script>
-
 </body>
 </html>
