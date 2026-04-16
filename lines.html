@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Card</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Trad:wght@100..400&family=Poppins:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="lines.css">
+</head>
+
+<body>
+
+<div class="container" id="card">
+	<img src="me.png" alt="">
+	<h1>I'm a <br> Frontend</h1>
+
+	<div class="group">
+		<span>❤</span>
+		<p>As a programmer, curiosity is the key to success.</p>
+		<span>❤</span>
+	</div>
+</div>
+
+<script>
+const card = document.getElementById("card");
+
+// ===== STATE =====
+let currentX = 0;
+let currentY = 0;
+
+let targetX = 0;
+let targetY = 0;
+
+let velocityX = 0;
+let velocityY = 0;
+
+// ===== LIGHT FOLLOW =====
+function updateLight(x, y) {
+	const rect = card.getBoundingClientRect();
+
+	const px = ((x - rect.left) / rect.width) * 100;
+	const py = ((y - rect.top) / rect.height) * 100;
+
+	card.style.setProperty("--x", `${px}%`);
+	card.style.setProperty("--y", `${py}%`);
+}
+
+// ===== POINTER MOVE (mouse + touch unified) =====
+card.addEventListener("pointermove", (e) => {
+	updateLight(e.clientX, e.clientY);
+
+	const rect = card.getBoundingClientRect();
+
+	const x = (e.clientX - rect.left) / rect.width - 0.5;
+	const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+	targetY = x * 16;
+	targetX = y * -16;
+});
+
+// ===== RESET =====
+card.addEventListener("pointerleave", () => {
+	targetX = 0;
+	targetY = 0;
+
+	card.style.setProperty("--x", "50%");
+	card.style.setProperty("--y", "50%");
+});
+
+// ===== ANIMATION =====
+function animate() {
+	velocityX += (targetX - currentX) * 0.08;
+	velocityY += (targetY - currentY) * 0.08;
+
+	currentX += velocityX;
+	currentY += velocityY;
+
+	velocityX *= 0.85;
+	velocityY *= 0.85;
+
+	card.style.transform = `
+		perspective(1000px)
+		rotateX(${currentX}deg)
+		rotateY(${currentY}deg)
+		scale(1.05)
+	`;
+
+	requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>

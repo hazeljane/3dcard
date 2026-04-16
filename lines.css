@@ -1,0 +1,91 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+:root {
+	--card-size: 200px;
+	--radius: 10px;
+	--perspective: 1000px;
+	--shine-opacity: 0.35;
+}
+
+body {
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: black;
+	perspective: var(--perspective);
+}
+
+/* ===== CARD ===== */
+.container {
+	width: var(--card-size);
+	height: var(--card-size);
+	background: white;
+	border-radius: var(--radius);
+
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+
+	transform-style: preserve-3d;
+	will-change: transform;
+}
+
+/* ===== LIGHT FOLLOW ===== */
+.container::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius);
+	pointer-events: none;
+
+	background: radial-gradient(
+		circle at var(--x, 50%) var(--y, 50%),
+		rgba(255,255,255,var(--shine-opacity)),
+		transparent 45%
+	);
+}
+
+/* ===== IMAGE ===== */
+img {
+	width: 180px;
+	position: absolute;
+	transform: translateZ(40px);
+	border-radius: var(--radius);
+}
+
+/* ===== TEXT ===== */
+h1 {
+	position: absolute;
+	font-family: "Playwrite US Trad", cursive;
+	color: #333;
+	opacity: 0.6;
+	transform: translateZ(30px) rotate(10deg);
+	text-align: center;
+}
+
+/* ===== FOOTER ===== */
+.group {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 6px 10px;
+
+	font-size: 10px;
+	color: white;
+
+	background: rgba(255,255,255,0.15);
+	backdrop-filter: blur(10px);
+
+	transform: translateZ(60px);
+	text-align: center;
+	font-family: "Poppins", sans-serif;
+}
