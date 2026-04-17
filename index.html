@@ -1,175 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Card</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Liquid Glass Card V3</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Trad:wght@100..400&family=Poppins:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="lines.css">
-
-<style>
-/* 🔥 Tap to enable overlay */
-#enableTilt {
-	position: fixed;
-	inset: 0;
-	background: rgba(0,0,0,0.8);
-	color: white;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-family: Poppins;
-	z-index: 999;
-	cursor: pointer;
-}
-</style>
 </head>
 
 <body>
 
-<div id="enableTilt">Tap to Enable 3D Tilt</div>
-
-<div class="container" id="card">
-	<img src="me.png" alt="">
-	<h1>I'm a <br> Frontend</h1>
-
-	<div class="group">
-		<span>❤</span>
-		<p>For a programmer, curiosity is the key to growth and success.</p>
-		<span>❤</span>
-	</div>
+<div class="card" id="card">
+  <img src="me.png" />
+  <h1>Frontend Dev</h1>
+  <p>For a programmer, curiosity is the key to growth and success.</p>
 </div>
 
-<script>
-const card = document.getElementById("card");
-const overlay = document.getElementById("enableTilt");
-
-// ===== ROTATION =====
-let currentX = 0;
-let currentY = 0;
-let targetX = 0;
-let targetY = 0;
-
-// ===== SHINE =====
-let shineX = 0;
-let shineY = 0;
-let shineRot = 0;
-
-let shineTargetX = 0;
-let shineTargetY = 0;
-let shineTargetRot = 0;
-
-// ===== PHYSICS =====
-let vx = 0;
-let vy = 0;
-
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
-// ================= LIGHT =================
-function updateLight(px, py) {
-	card.style.setProperty("--x", px + "%");
-	card.style.setProperty("--y", py + "%");
-}
-
-// ================= DESKTOP =================
-function handleMouseMove(e) {
-	const r = card.getBoundingClientRect();
-
-	const x = (e.clientX - r.left) / r.width - 0.5;
-	const y = (e.clientY - r.top) / r.height - 0.5;
-
-	targetY = x * 16;
-	targetX = y * -16;
-
-	shineTargetX = x * 70;
-	shineTargetY = y * 70;
-	shineTargetRot = x * 30;
-
-	updateLight((x + 0.5) * 100, (y + 0.5) * 100);
-}
-
-// ================= MOBILE GYRO =================
-function handleOrientation(e) {
-	let x = e.beta;
-	let y = e.gamma;
-
-	if (x == null || y == null) return;
-
-	x = Math.max(-25, Math.min(25, x));
-	y = Math.max(-25, Math.min(25, y));
-
-	targetX = x / 2;
-	targetY = y / 2;
-
-	// smoother shine response (IMPORTANT FIX)
-	shineTargetX = y * 2.5;
-	shineTargetY = x * 2.5;
-	shineTargetRot = y * 3.5;
-
-	updateLight(
-		((y + 25) / 50) * 100,
-		((x + 25) / 50) * 100
-	);
-}
-
-// ================= GYRO ENABLE =================
-function enableGyro() {
-	if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-		DeviceOrientationEvent.requestPermission()
-			.then(res => {
-				if (res === "granted") {
-					window.addEventListener("deviceorientation", handleOrientation);
-					overlay.style.display = "none";
-				}
-			});
-	} else {
-		window.addEventListener("deviceorientation", handleOrientation);
-		overlay.style.display = "none";
-	}
-}
-
-// ================= INIT =================
-if (isMobile) {
-	overlay.addEventListener("click", enableGyro, { once: true });
-} else {
-	overlay.style.display = "none";
-	card.addEventListener("pointermove", handleMouseMove);
-}
-
-// ================= ANIMATION =================
-function animate() {
-	// rotation physics
-	vx += (targetX - currentX) * 0.08;
-	vy += (targetY - currentY) * 0.08;
-
-	currentX += vx;
-	currentY += vy;
-
-	vx *= 0.85;
-	vy *= 0.85;
-
-	card.style.transform = `
-		perspective(1000px)
-		rotateX(${currentX}deg)
-		rotateY(${currentY}deg)
-		scale(1.05)
-	`;
-
-	// shine smoothing (IMPORTANT FIX)
-	shineX += (shineTargetX - shineX) * 0.14;
-	shineY += (shineTargetY - shineY) * 0.14;
-	shineRot += (shineTargetRot - shineRot) * 0.14;
-
-	card.style.setProperty("--shine-x", shineX + "px");
-	card.style.setProperty("--shine-y", shineY + "px");
-	card.style.setProperty("--shine-rot", shineRot + "deg");
-
-	requestAnimationFrame(animate);
-}
-
-animate();
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>

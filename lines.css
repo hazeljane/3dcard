@@ -1,102 +1,84 @@
 * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-}
-
-:root {
-	--card-size: 200px;
-	--radius: 10px;
-	--perspective: 1000px;
-	--shine-opacity: 0.35;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-	height: 100vh;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: black;
-	touch-action: manipulation;
-	perspective: var(--perspective);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at top, #1a1a1a, #000);
+  perspective: 1000px;
 }
 
 /* ===== CARD ===== */
-.container {
-	width: var(--card-size);
-	height: var(--card-size);
-	background: white;
-	border-radius: var(--radius);
+.card {
+  width: 260px;
+  height: 260px;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
 
-	backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
 
-	touch-action: none;
-
-	transform-style: preserve-3d;
-	will-change: transform;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* ===== LIGHT FOLLOW ===== */
-.container::before {
-	content: "";
-	position: absolute;
-	inset: -40%;
-	pointer-events: none;
+/* ===== REAL LIQUID SHINE ===== */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -120%;
+  pointer-events: none;
 
-	background: radial-gradient(
-		circle at 50% 50%,
-		rgba(255,255,255,0.45),
-		transparent 65%
-	);
+  background: conic-gradient(
+    from var(--rot, 0deg),
+    transparent 0%,
+    rgba(255,255,255,0.15) 10%,
+    rgba(255,255,255,0.5) 20%,
+    transparent 35%,
+    rgba(255,255,255,0.2) 50%,
+    transparent 70%
+  );
 
-	transform: translateX(var(--shine-x))
-		translateY(var(--shine-y))
-		rotate(var(--shine-rot));
+  transform: translate(
+    var(--shine-x, 0px),
+    var(--shine-y, 0px)
+  );
 
-	mix-blend-mode: screen;
-	filter: blur(1px);
-	will-change: transform;
+  mix-blend-mode: screen;
+  opacity: var(--shine-opacity, 0.5);
+  filter: blur(6px);
 }
-/* ===== IMAGE ===== */
+
+/* ===== CONTENT ===== */
 img {
-	width: 180px;
-	position: absolute;
-	transform: translateZ(40px);
-	border-radius: var(--radius);
+  width: 120px;
+  border-radius: 12px;
+  transform: translateZ(40px);
 }
 
-/* ===== TEXT ===== */
 h1 {
-	position: absolute;
-	font-family: "Playwrite US Trad", cursive;
-	color: #333;
-	opacity: 0.6;
-	transform: translateZ(30px) rotate(10deg);
-	text-align: center;
+  font-family: Poppins;
+  color: white;
+  margin-top: 10px;
+  transform: translateZ(30px);
 }
 
-/* ===== FOOTER ===== */
-.group {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	padding: 6px 10px;
-
-	font-size: 10px;
-	color: white;
-
-	background: rgba(255,255,255,0.15);
-	backdrop-filter: blur(10px);
-
-	transform: translateZ(60px);
-	text-align: center;
-	font-family: "Poppins", sans-serif;
+p {
+  font-family: Poppins;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  transform: translateZ(20px);
+  text-align: center;
 }
