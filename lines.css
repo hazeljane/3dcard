@@ -28,8 +28,8 @@ body {
 	background: white;
 	border-radius: var(--radius);
 
-	transform-style: preserve-3d;
-	
+	backface-visibility: hidden;
+
 	position: relative;
 	display: flex;
 	justify-content: center;
@@ -46,17 +46,23 @@ body {
 .container::before {
 	content: "";
 	position: absolute;
-	inset: 0;
-	border-radius: var(--radius);
+	inset: -40%;
 	pointer-events: none;
 
 	background: radial-gradient(
-		circle at var(--x, 50%) var(--y, 50%),
-		rgba(255,255,255,var(--shine-opacity)),
-		transparent 45%
+		circle at 50% 50%,
+		rgba(255,255,255,0.45),
+		transparent 65%
 	);
-}
 
+	transform: translateX(var(--shine-x))
+		translateY(var(--shine-y))
+		rotate(var(--shine-rot));
+
+	mix-blend-mode: screen;
+	filter: blur(1px);
+	will-change: transform;
+}
 /* ===== IMAGE ===== */
 img {
 	width: 180px;

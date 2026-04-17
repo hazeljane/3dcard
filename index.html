@@ -45,71 +45,83 @@
 const card = document.getElementById("card");
 const overlay = document.getElementById("enableTilt");
 
-// ===== STATE =====
+// ===== ROTATION =====
 let currentX = 0;
 let currentY = 0;
 let targetX = 0;
 let targetY = 0;
-let velocityX = 0;
-let velocityY = 0;
+
+// ===== SHINE =====
+let shineX = 0;
+let shineY = 0;
+let shineRot = 0;
+
+let shineTargetX = 0;
+let shineTargetY = 0;
+let shineTargetRot = 0;
+
+// ===== PHYSICS =====
+let vx = 0;
+let vy = 0;
 
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-// ===== LIGHT =====
+// ================= LIGHT =================
 function updateLight(px, py) {
 	card.style.setProperty("--x", px + "%");
 	card.style.setProperty("--y", py + "%");
 }
 
-// ===== DESKTOP =====
+// ================= DESKTOP =================
 function handleMouseMove(e) {
-	const rect = card.getBoundingClientRect();
+	const r = card.getBoundingClientRect();
 
-	const x = (e.clientX - rect.left) / rect.width - 0.5;
-	const y = (e.clientY - rect.top) / rect.height - 0.5;
+	const x = (e.clientX - r.left) / r.width - 0.5;
+	const y = (e.clientY - r.top) / r.height - 0.5;
 
 	targetY = x * 16;
 	targetX = y * -16;
 
+	shineTargetX = x * 70;
+	shineTargetY = y * 70;
+	shineTargetRot = x * 30;
+
 	updateLight((x + 0.5) * 100, (y + 0.5) * 100);
 }
 
-// ===== MOBILE GYRO =====
+// ================= MOBILE GYRO =================
 function handleOrientation(e) {
 	let x = e.beta;
 	let y = e.gamma;
 
-	if (x === null || y === null) return;
+	if (x == null || y == null) return;
 
-	x = Math.max(-30, Math.min(30, x));
-	y = Math.max(-30, Math.min(30, y));
+	x = Math.max(-25, Math.min(25, x));
+	y = Math.max(-25, Math.min(25, y));
 
 	targetX = x / 2;
 	targetY = y / 2;
 
+	// smoother shine response (IMPORTANT FIX)
+	shineTargetX = y * 2.5;
+	shineTargetY = x * 2.5;
+	shineTargetRot = y * 3.5;
+
 	updateLight(
-		((y + 30) / 60) * 100,
-		((x + 30) / 60) * 100
+		((y + 25) / 50) * 100,
+		((x + 25) / 50) * 100
 	);
 }
 
-// ===== ENABLE GYRO =====
+// ================= GYRO ENABLE =================
 function enableGyro() {
-	if (
-		typeof DeviceOrientationEvent !== "undefined" &&
-		typeof DeviceOrientationEvent.requestPermission === "function"
-	) {
+	if (typeof DeviceOrientationEvent?.requestPermission === "function") {
 		DeviceOrientationEvent.requestPermission()
 			.then(res => {
 				if (res === "granted") {
 					window.addEventListener("deviceorientation", handleOrientation);
 					overlay.style.display = "none";
-				} else {
-					overlay.innerText = "Permission denied ❌";
 				}
-			})
-			.catch(() => {
-				overlay.innerText = "Gyro not supported ❌";
 			});
 	} else {
 		window.addEventListener("deviceorientation", handleOrientation);
@@ -117,31 +129,25 @@ function enableGyro() {
 	}
 }
 
-// ===== INIT =====
+// ================= INIT =================
 if (isMobile) {
-	overlay.addEventListener("click", enableGyro);
+	overlay.addEventListener("click", enableGyro, { once: true });
 } else {
 	overlay.style.display = "none";
-
 	card.addEventListener("pointermove", handleMouseMove);
-
-	card.addEventListener("pointerleave", () => {
-		targetX = 0;
-		targetY = 0;
-		updateLight(50, 50);
-	});
 }
 
-// ===== ANIMATION =====
+// ================= ANIMATION =================
 function animate() {
-	velocityX += (targetX - currentX) * 0.08;
-	velocityY += (targetY - currentY) * 0.08;
+	// rotation physics
+	vx += (targetX - currentX) * 0.08;
+	vy += (targetY - currentY) * 0.08;
 
-	currentX += velocityX;
-	currentY += velocityY;
+	currentX += vx;
+	currentY += vy;
 
-	velocityX *= 0.85;
-	velocityY *= 0.85;
+	vx *= 0.85;
+	vy *= 0.85;
 
 	card.style.transform = `
 		perspective(1000px)
@@ -149,6 +155,15 @@ function animate() {
 		rotateY(${currentY}deg)
 		scale(1.05)
 	`;
+
+	// shine smoothing (IMPORTANT FIX)
+	shineX += (shineTargetX - shineX) * 0.14;
+	shineY += (shineTargetY - shineY) * 0.14;
+	shineRot += (shineTargetRot - shineRot) * 0.14;
+
+	card.style.setProperty("--shine-x", shineX + "px");
+	card.style.setProperty("--shine-y", shineY + "px");
+	card.style.setProperty("--shine-rot", shineRot + "deg");
 
 	requestAnimationFrame(animate);
 }
